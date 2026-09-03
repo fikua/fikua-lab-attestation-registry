@@ -1,0 +1,208 @@
+{
+  "rulebook": {
+    "attestationType": "Certificat d'Empadronament (Ajuntament de Barcelona)",
+    "status": "draft",
+    "version": "0.1",
+    "contact": "https://fikua.eu/lab",
+    "legalBasis": [
+      "Ley 7/1985, de 2 de abril, Reguladora de las Bases del Régimen Local, art. 15-17",
+      "Reglamento de Población y Demarcación Territorial de las Entidades Locales (RD 1690/1986), art. 53-77",
+      "Resolución de 17 de febrero de 2020 (INE/DGCG) sobre gestión del Padrón municipal"
+    ],
+    "category": "eaa:eu:non-qualified"
+  },
+  "scheme": {
+    "id": "urn:fikua:padro:barcelona:1",
+    "version": "0.1",
+    "trustedAuthorities": [],
+    "attestationLoS": "iso_18045_moderate",
+    "bindingType": "key",
+    "supportedFormats": [
+      "dc+sd-jwt"
+    ],
+    "schemas": [
+      {
+        "format": "dc+sd-jwt",
+        "typeIdentifier": "urn:fikua:padro:barcelona:1",
+        "claims": [
+          {
+            "dataIdentifier": "category",
+            "path": [
+              "category"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "given_name",
+            "path": [
+              "given_name"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "family_name",
+            "path": [
+              "family_name"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "birth_date",
+            "path": [
+              "birthdate"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "nationality",
+            "path": [
+              "nationalities"
+            ],
+            "dataType": "array of string (ISO 3166-1 alpha-2)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "document_type",
+            "path": [
+              "document_type"
+            ],
+            "dataType": "string (enum: DNI, NIE, PASSPORT)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "document_number",
+            "path": [
+              "document_number"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_street",
+            "path": [
+              "address",
+              "street_address"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_municipality",
+            "path": [
+              "address",
+              "locality"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_district",
+            "path": [
+              "address",
+              "district"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_postal_code",
+            "path": [
+              "address",
+              "postal_code"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_country",
+            "path": [
+              "address",
+              "country"
+            ],
+            "dataType": "string (ISO 3166-1 alpha-2)",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "registration_date",
+            "path": [
+              "registration_date"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "cohabitants_count",
+            "path": [
+              "cohabitants_count"
+            ],
+            "dataType": "number",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "issuing_authority",
+            "path": [
+              "issuing_authority"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "issuing_country",
+            "path": [
+              "issuing_country"
+            ],
+            "dataType": "string (ISO 3166-1 alpha-2)",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "issuance_date",
+            "path": [
+              "date_of_issuance"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "expiry_date",
+            "path": [
+              "date_of_expiry"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "optional",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "cryptographically_bound_to",
+            "path": [
+              "cryptographically_bound_to"
+            ],
+            "dataType": "string (attestation type or vct)",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          }
+        ]
+      }
+    ]
+  }
+}

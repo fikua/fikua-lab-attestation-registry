@@ -1,0 +1,49 @@
+{{define "title"}}{{.Definition.Rulebook.AttestationType}}{{end}}
+{{define "content"}}
+<a href="/" class="back">&larr; Tots els rulebooks</a>
+<h1>{{.Definition.Rulebook.AttestationType}}</h1>
+
+<section class="meta">
+  <dl>
+    <dt>Scheme ID</dt><dd><code>{{.Definition.Scheme.ID}}</code></dd>
+    <dt>Version</dt><dd>{{.Definition.Rulebook.Version}}</dd>
+    <dt>Status</dt><dd>{{.Definition.Rulebook.Status}}</dd>
+    <dt>Contact</dt><dd>{{.Definition.Rulebook.Contact}}</dd>
+    <dt>Category</dt><dd>{{if .Definition.Rulebook.Category}}{{.Definition.Rulebook.Category}}{{else}}&mdash;{{end}}</dd>
+    <dt>Assurance level</dt><dd>{{.Definition.Scheme.AttestationLoS}}</dd>
+    <dt>Binding type</dt><dd>{{.Definition.Scheme.BindingType}}</dd>
+    {{if .Definition.Rulebook.DocumentURI}}<dt>Full Rulebook</dt><dd><a href="{{.Definition.Rulebook.DocumentURI}}">{{.Definition.Rulebook.DocumentURI}}</a></dd>{{end}}
+  </dl>
+
+  {{if .Definition.Rulebook.LegalBasis}}
+  <h3>Legal basis</h3>
+  <ul>{{range .Definition.Rulebook.LegalBasis}}<li>{{.}}</li>{{end}}</ul>
+  {{end}}
+</section>
+
+{{range .Definition.Scheme.Schemas}}
+<section class="format-schema">
+  <h2>{{.Format}} &mdash; <code>{{.TypeIdentifier}}</code></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Data Identifier</th><th>Path</th><th>Data type</th><th>Presence</th>
+        <th>Namespace</th><th>Disclosable</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Claims}}
+      <tr class="presence-{{.Presence}}">
+        <td>{{.DataIdentifier}}</td>
+        <td><code>{{join .Path "."}}</code></td>
+        <td>{{.DataType}}</td>
+        <td><span class="badge presence-{{.Presence}}">{{.Presence}}</span></td>
+        <td>{{if .Namespace}}<code>{{.Namespace}}</code>{{else}}&mdash;{{end}}</td>
+        <td>{{if .Disclosability}}{{.Disclosability}}{{else}}&mdash;{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}
+{{end}}

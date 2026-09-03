@@ -1,0 +1,20 @@
+{{define "title"}}Attestation Registry{{end}}
+{{define "content"}}
+<h1>Attestation Rulebooks</h1>
+<table>
+  <thead>
+    <tr><th>Attestation Type</th><th>Scheme ID</th><th>Format</th><th>Category</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {{range .Definitions}}
+    <tr>
+      <td><a href="/rulebooks/{{.Scheme.ID}}">{{.Rulebook.AttestationType}}</a></td>
+      <td><code>{{.Scheme.ID}}</code></td>
+      <td>{{range .Scheme.SupportedFormats}}<span class="badge">{{.}}</span> {{end}}</td>
+      <td>{{if .Rulebook.Category}}{{.Rulebook.Category}}{{else}}&mdash;{{end}}</td>
+      <td>{{.Rulebook.Status}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

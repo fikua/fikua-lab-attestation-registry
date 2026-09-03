@@ -1,0 +1,278 @@
+{
+  "rulebook": {
+    "attestationType": "EUDI PID (SD-JWT VC)",
+    "status": "final",
+    "version": "1.7",
+    "contact": "https://github.com/eu-digital-identity-wallet/eudi-doc-attestation-rulebooks-catalog",
+    "legalBasis": [
+      "CIR 2024/2977",
+      "Regulation (EU) 2024/1183"
+    ],
+    "documentUri": "https://github.com/eu-digital-identity-wallet/eudi-doc-attestation-rulebooks-catalog/blob/main/rulebooks/pid/pid-rulebook.md"
+  },
+  "scheme": {
+    "id": "urn:eudi:pid:1",
+    "version": "1.7",
+    "rulebookUri": "https://github.com/eu-digital-identity-wallet/eudi-doc-attestation-rulebooks-catalog/blob/main/rulebooks/pid/pid-rulebook.md",
+    "trustedAuthorities": [
+      {
+        "frameworkType": "etsi_tl",
+        "value": "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+        "isLoTE": false
+      }
+    ],
+    "attestationLoS": "iso_18045_high",
+    "bindingType": "key",
+    "supportedFormats": [
+      "dc+sd-jwt"
+    ],
+    "schemas": [
+      {
+        "format": "dc+sd-jwt",
+        "typeIdentifier": "urn:eudi:pid:1",
+        "claims": [
+          {
+            "dataIdentifier": "family_name",
+            "path": [
+              "family_name"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "given_name",
+            "path": [
+              "given_name"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "birth_date",
+            "path": [
+              "birthdate"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "birth_place",
+            "path": [
+              "place_of_birth"
+            ],
+            "dataType": "object {country?, region?, locality?}",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "nationality",
+            "path": [
+              "nationalities"
+            ],
+            "dataType": "array of string (ISO 3166-1 alpha-2)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "portrait",
+            "path": [
+              "picture"
+            ],
+            "dataType": "string (data URL, base64 JPEG)",
+            "presence": "mandatory",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "issuing_authority",
+            "path": [
+              "issuing_authority"
+            ],
+            "dataType": "string",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "issuing_country",
+            "path": [
+              "issuing_country"
+            ],
+            "dataType": "string (ISO 3166-1 alpha-2)",
+            "presence": "mandatory",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "resident_address",
+            "path": [
+              "address",
+              "formatted"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_country",
+            "path": [
+              "address",
+              "country"
+            ],
+            "dataType": "string (ISO 3166-1 alpha-2)",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_state",
+            "path": [
+              "address",
+              "region"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_city",
+            "path": [
+              "address",
+              "locality"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_postal_code",
+            "path": [
+              "address",
+              "postal_code"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "resident_street",
+            "path": [
+              "address",
+              "street_address"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "family_name_birth",
+            "path": [
+              "birth_family_name"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "given_name_birth",
+            "path": [
+              "birth_given_name"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "sex",
+            "path": [
+              "sex"
+            ],
+            "dataType": "number (ISO/IEC 5218)",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "email_address",
+            "path": [
+              "email"
+            ],
+            "dataType": "string (RFC 5322)",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "mobile_phone_number",
+            "path": [
+              "phone_number"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "personal_administrative_number",
+            "path": [
+              "personal_administrative_number"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "expiry_date",
+            "path": [
+              "date_of_expiry"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "optional",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "issuance_date",
+            "path": [
+              "date_of_issuance"
+            ],
+            "dataType": "string (ISO 8601-1 YYYY-MM-DD)",
+            "presence": "optional",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "document_number",
+            "path": [
+              "document_number"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "issuing_jurisdiction",
+            "path": [
+              "issuing_jurisdiction"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST"
+          },
+          {
+            "dataIdentifier": "trust_anchor",
+            "path": [
+              "trust_anchor"
+            ],
+            "dataType": "string (URI)",
+            "presence": "optional",
+            "disclosability": "MUST NOT"
+          },
+          {
+            "dataIdentifier": "attestation_legal_category",
+            "path": [
+              "attestation_legal_category"
+            ],
+            "dataType": "string",
+            "presence": "optional",
+            "disclosability": "MUST NOT"
+          }
+        ]
+      }
+    ]
+  }
+}
