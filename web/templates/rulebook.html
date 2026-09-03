@@ -32,6 +32,7 @@
 {{range .Definition.Scheme.Schemas}}
 <section class="format-schema">
   <h2>{{.Format}} &mdash; <code>{{.TypeIdentifier}}</code></h2>
+  <div class="table-wrap">
   <table>
     <thead>
       <tr>
@@ -53,6 +54,7 @@
       {{end}}
     </tbody>
   </table>
+  </div>
 </section>
 {{end}}
 {{end}}

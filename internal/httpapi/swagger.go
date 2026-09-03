@@ -15,6 +15,7 @@ const swaggerPageTemplate = `<!doctype html>
 <head>
   <meta charset="utf-8">
   <title>Fikua Attestation Registry &mdash; API docs</title>
+  <link rel="icon" type="image/svg+xml" href=%q>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css">
 </head>
 <body>
@@ -34,7 +35,7 @@ const swaggerPageTemplate = `<!doctype html>
 
 func (h *Handler) swaggerUI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	page := fmt.Sprintf(swaggerPageTemplate, h.basePath+"/openapi.yaml")
+	page := fmt.Sprintf(swaggerPageTemplate, h.basePath+"/static/favicon.svg", h.basePath+"/openapi.yaml")
 	_, _ = w.Write([]byte(page))
 }
 

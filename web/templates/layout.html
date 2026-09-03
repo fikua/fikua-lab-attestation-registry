@@ -5,13 +5,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{template "title" .}}</title>
+  <link rel="icon" type="image/svg+xml" href="{{base "/static/favicon.svg"}}">
   <link rel="stylesheet" href="{{base "/static/style.css"}}">
 </head>
 <body>
-  <header>
-    <a href="{{base "/"}}" class="brand">Fikua Attestation Registry</a>
-    <span class="tagline">ARF 3.0 · ETSI TS 119 472</span>
-  </header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="{{base "/"}}" class="nav-brand">
+        <span class="nav-logo">F</span>
+        <span class="nav-name">Fikua Lab</span>
+      </a>
+      <div class="nav-links">
+        <span class="nav-label">Attestation Registry</span>
+      </div>
+    </div>
+  </nav>
   <main>
     {{template "content" .}}
   </main>
