@@ -9,3 +9,6 @@ var TemplatesFS embed.FS
 
 //go:embed static/*
 var StaticFS embed.FS
+
+//go:embed openapi.yaml
+var OpenAPISpec []byte

@@ -73,3 +73,31 @@ are expected to fetch scheme definitions from this service's `/api/v1/schemes`
 endpoint at startup or on demand, rather than declaring credential shapes
 themselves. Do not duplicate credential/claims definitions back into
 `fikua-lab` — this registry is the single source of truth.
+
+## Deployment
+
+CI/CD (`.github/workflows/`) mirrors `fikua/niu`'s pipeline exactly:
+`build.yml` (vet/test on push/PR) → `release.yml` (multi-arch Docker Hub
+push on push to `main` / release) → `deploy.yml` (SSH via Cloudflare Access
+tunnel *for VPS access only*, `docker compose pull && up -d` on the VPS,
+health poll, Traefik smoke test).
+
+The deployment definition (`compose.yaml`) is sourced from
+`fikua-platform-iac/projects/fikua-lab-attestation-registry/` and synced
+into this repo's own `compose.yaml` so `deploy.yml` can `scp` it —
+**edit the platform-iac copy first, then copy it here**; don't let them
+drift (same convention as niu).
+
+This service is reachable directly at `attestation-registry.fikua.com` — a
+plain Cloudflare-proxied A record straight to Traefik, same pattern as
+`niu` and `exam-room`. It deliberately does **not** use the
+`lab.fikua.com/<role>/` Workers-per-role + Cloudflare Tunnel + Access
+pattern that `fikua-lab`'s own frontends use (ADR 0008r1 in
+fikua-platform-iac): this service shares no code with that Java monorepo,
+and that pattern's Tunnel+Access+Worker indirection would only add
+complexity (a Worker hop, a `BASE_PATH`-style URL rewrite) with no benefit
+here. If `lab.fikua.com` itself is ever migrated to plain Traefik
+path-based routing, this service could move under it without a code
+change — `internal/webui` and `internal/httpapi` already support an
+optional `BASE_PATH` env var for exactly that scenario, unused for now
+(defaults to "", i.e. served at the root).

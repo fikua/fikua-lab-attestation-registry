@@ -1,9 +1,11 @@
 package webui_test
 
 import (
+	"io"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/fikua/fikua-lab-attestation-registry/data/attestations"
@@ -12,7 +14,7 @@ import (
 	"github.com/fikua/fikua-lab-attestation-registry/web"
 )
 
-func newTestServer(t *testing.T) *httptest.Server {
+func newTestServerWithBasePath(t *testing.T, basePath string) *httptest.Server {
 	t.Helper()
 
 	cat, err := catalogue.LoadFS(attestations.FS, ".")
@@ -29,7 +31,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 		t.Fatalf("static sub: %v", err)
 	}
 
-	handler, err := webui.NewHandler(cat, tmplFS, staticFS)
+	handler, err := webui.NewHandler(cat, tmplFS, staticFS, basePath)
 	if err != nil {
 		t.Fatalf("NewHandler: %v", err)
 	}
@@ -37,6 +39,11 @@ func newTestServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
 	handler.Routes(mux)
 	return httptest.NewServer(mux)
+}
+
+func newTestServer(t *testing.T) *httptest.Server {
+	t.Helper()
+	return newTestServerWithBasePath(t, "")
 }
 
 func TestIndexListsAllRulebooks(t *testing.T) {
@@ -92,5 +99,44 @@ func TestStaticAssetIsServed(t *testing.T) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+}
+
+func TestBasePathPrefixesRoutesAndLinks(t *testing.T) {
+	srv := newTestServerWithBasePath(t, "/attestation-registry")
+	defer srv.Close()
+
+	// The route itself is only reachable under the prefix.
+	resp, err := http.Get(srv.URL + "/attestation-registry/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	html := string(body)
+
+	if !strings.Contains(html, `/attestation-registry/static/style.css`) {
+		t.Errorf("index page does not link to the prefixed stylesheet: %s", html)
+	}
+	if !strings.Contains(html, `/attestation-registry/rulebooks/`) {
+		t.Errorf("index page does not link to a prefixed rulebook: %s", html)
+	}
+
+	// Unprefixed root must not resolve (it belongs to a different service
+	// mounted at the zone root, if any).
+	rootResp, err := http.Get(srv.URL + "/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rootResp.Body.Close()
+	if rootResp.StatusCode == http.StatusOK {
+		t.Error("unprefixed root should not be served when a base path is configured")
 	}
 }

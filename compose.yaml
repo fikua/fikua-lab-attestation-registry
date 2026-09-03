@@ -1,0 +1,65 @@
+# Fikua Lab Attestation Registry — deployment
+#
+# Image: docker.io/fikua/fikua-lab-attestation-registry (published by the
+# fikua/fikua-lab-attestation-registry repo's release.yml on every
+# published release / push to main).
+#
+# Source of truth for this file:
+#   fikua-platform-iac/projects/fikua-lab-attestation-registry/compose.yaml
+#
+# A copy travels with the app repo at
+# fikua-lab-attestation-registry/compose.yaml so deploy.yml can push it to
+# the host on every deploy — keep both in sync (same convention as niu).
+#
+# Host path on the VPS: /opt/vps/projects/fikua-lab-attestation-registry/
+#
+# Stateless, read-only service: no database, no volumes, no secrets. The
+# attestation catalogue is embedded in the binary at build time (see the
+# app repo's data/attestations/*.json). Same deployment shape as niu:
+# direct Cloudflare-proxied hostname -> Traefik -> container, no Tunnel,
+# no Cloudflare Access, no Worker in front.
+
+services:
+  fikua-lab-attestation-registry:
+    image: ${DOCKER_REGISTRY:-fikua}/fikua-lab-attestation-registry:${ATTESTATION_REGISTRY_VERSION:-latest}
+    container_name: fikua-lab-attestation-registry
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    labels:
+      # Direct Cloudflare-proxied A record -> Traefik websecure (443),
+      # same pattern as niu and exam-room. Cert comes from the existing
+      # *.fikua.com wildcard already configured on the `cloudflare`
+      # certResolver — no new ACME request needed.
+      traefik.enable: "true"
+      traefik.http.routers.attestation-registry.rule: "Host(`attestation-registry.fikua.com`)"
+      traefik.http.routers.attestation-registry.entrypoints: "websecure"
+      traefik.http.routers.attestation-registry.tls: "true"
+      traefik.http.routers.attestation-registry.service: "attestation-registry"
+      traefik.http.services.attestation-registry.loadbalancer.server.port: "8080"
+      # Rate limit: mirrors niu's. sourcecriterion.requestheadername is
+      # REQUIRED — without it the limiter sees rotating Cloudflare edge
+      # IPs (the ratelimit middleware runs before the
+      # forwardedHeaders/X-Forwarded-For rewrite) and never fires.
+      traefik.http.routers.attestation-registry.middlewares: "attestation-registry-ratelimit"
+      traefik.http.middlewares.attestation-registry-ratelimit.ratelimit.average: "60"
+      traefik.http.middlewares.attestation-registry-ratelimit.ratelimit.period: "1m"
+      traefik.http.middlewares.attestation-registry-ratelimit.ratelimit.burst: "100"
+      traefik.http.middlewares.attestation-registry-ratelimit.ratelimit.sourcecriterion.requestheadername: "Cf-Connecting-Ip"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.5'
+    logging:
+      driver: json-file
+      options:
+        max-size: "25m"
+        max-file: "3"
+
+networks:
+  # Shared L7 fabric owned by platform-services — joined for Traefik
+  # routing.
+  traefik-public:
+    name: traefik-public
+    external: true

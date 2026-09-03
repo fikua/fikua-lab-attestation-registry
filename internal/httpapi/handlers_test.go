@@ -9,6 +9,7 @@ import (
 	"github.com/fikua/fikua-lab-attestation-registry/data/attestations"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/catalogue"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/httpapi"
+	"github.com/fikua/fikua-lab-attestation-registry/web"
 )
 
 func newTestServer(t *testing.T) *httptest.Server {
@@ -18,7 +19,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 		t.Fatalf("LoadFS: %v", err)
 	}
 	mux := http.NewServeMux()
-	httpapi.NewHandler(cat).Routes(mux)
+	httpapi.NewHandler(cat, web.OpenAPISpec, "").Routes(mux)
 	return httptest.NewServer(mux)
 }
 
@@ -80,5 +81,36 @@ func TestGetUnknownSchemeReturns404(t *testing.T) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("status = %d, want 404", resp.StatusCode)
+	}
+}
+
+func TestOpenAPISpecIsServed(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/openapi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	if len(web.OpenAPISpec) == 0 {
+		t.Fatal("embedded OpenAPI spec is empty")
+	}
+}
+
+func TestSwaggerUIPageIsServed(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/swagger")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
 	}
 }

@@ -18,15 +18,26 @@ type Handler struct {
 	indexTmpl    *template.Template
 	rulebookTmpl *template.Template
 	staticFS     fs.FS
+	basePath     string
 }
 
 // NewHandler builds a webui Handler. templatesFS must contain layout.html
 // plus one file per page ("index.html", "rulebook.html") at its root, each
 // defining its own "title" and "content" blocks. staticFS is served under
-// /static/. Pages are parsed as separate template sets so their same-named
-// "title"/"content" blocks don't collide.
-func NewHandler(c *catalogue.Catalogue, templatesFS fs.FS, staticFS fs.FS) (*Handler, error) {
-	funcs := template.FuncMap{"join": strings.Join}
+// {basePath}/static/. Pages are parsed as separate template sets so their
+// same-named "title"/"content" blocks don't collide.
+//
+// basePath is prepended to every link this handler renders or redirects to
+// (e.g. "/static/style.css" becomes "/attestation-registry/static/style.css").
+// It's needed because this service is reachable through a reverse-proxying
+// Worker at lab.fikua.com/attestation-registry/ as well as directly at its
+// own root — pass "" when served at the root (local dev, direct access).
+func NewHandler(c *catalogue.Catalogue, templatesFS fs.FS, staticFS fs.FS, basePath string) (*Handler, error) {
+	basePath = strings.TrimSuffix(basePath, "/")
+	funcs := template.FuncMap{
+		"join": strings.Join,
+		"base": func(path string) string { return basePath + path },
+	}
 
 	indexTmpl, err := template.New("").Funcs(funcs).ParseFS(templatesFS, "layout.html", "index.html")
 	if err != nil {
@@ -37,20 +48,21 @@ func NewHandler(c *catalogue.Catalogue, templatesFS fs.FS, staticFS fs.FS) (*Han
 		return nil, err
 	}
 
-	return &Handler{catalogue: c, indexTmpl: indexTmpl, rulebookTmpl: rulebookTmpl, staticFS: staticFS}, nil
+	return &Handler{catalogue: c, indexTmpl: indexTmpl, rulebookTmpl: rulebookTmpl, staticFS: staticFS, basePath: basePath}, nil
 }
 
 // Routes registers this handler's endpoints on mux, including the embedded
-// static assets under /static/.
+// static assets under {basePath}/static/.
 func (h *Handler) Routes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /{$}", h.index)
-	mux.HandleFunc("GET /rulebooks/{id...}", h.rulebook)
-	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(h.staticFS))))
+	mux.HandleFunc("GET "+h.basePath+"/{$}", h.index)
+	mux.HandleFunc("GET "+h.basePath+"/rulebooks/{id...}", h.rulebook)
+	mux.Handle("GET "+h.basePath+"/static/", http.StripPrefix(h.basePath+"/static/", http.FileServer(http.FS(h.staticFS))))
 }
 
 func (h *Handler) index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, h.indexTmpl, map[string]any{
 		"Definitions": h.catalogue.All(),
+		"BasePath":    h.basePath,
 	})
 }
 
@@ -63,6 +75,7 @@ func (h *Handler) rulebook(w http.ResponseWriter, r *http.Request) {
 	}
 	h.render(w, h.rulebookTmpl, map[string]any{
 		"Definition": definition,
+		"BasePath":   h.basePath,
 	})
 }
 

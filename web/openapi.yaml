@@ -1,0 +1,175 @@
+openapi: 3.0.3
+info:
+  title: Fikua Attestation Registry
+  description: >
+    Catalogue of Attestations for the Fikua Lab EUDI Wallet ecosystem, per
+    ARF 3.0 and ETSI TS 119 472. Read-only JSON API consumed by
+    fikua-lab-issuer and fikua-lab-verifier.
+  version: "0.1.0"
+  license:
+    name: Proprietary
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      operationId: healthz
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /api/v1/schemes:
+    get:
+      summary: List all attestation definitions
+      operationId: listSchemes
+      responses:
+        "200":
+          description: All registered attestation definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttestationDefinition"
+  /api/v1/schemes/{id}:
+    get:
+      summary: Get one attestation definition by scheme id
+      operationId: getScheme
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: >
+            The attestation scheme id (e.g. "urn:eudi:pid:1" or
+            "eu.europa.ec.eudi.pid.1"). May contain colons.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The attestation definition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttestationDefinition"
+        "404":
+          description: No definition registered under that scheme id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+components:
+  schemas:
+    AttestationDefinition:
+      type: object
+      properties:
+        rulebook:
+          $ref: "#/components/schemas/AttestationRulebook"
+        scheme:
+          $ref: "#/components/schemas/AttestationScheme"
+    AttestationRulebook:
+      type: object
+      description: Human-readable Attestation Rulebook metadata (ARF 3.0 / TS11 §4.2).
+      properties:
+        attestationType:
+          type: string
+        status:
+          type: string
+        version:
+          type: string
+        contact:
+          type: string
+        legalBasis:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+          enum:
+            - urn:etsi:esi:eaa:eu:qualified
+            - urn:etsi:esi:eaa:eu:pub
+            - "eaa:eu:non-qualified"
+        documentUri:
+          type: string
+    AttestationScheme:
+      type: object
+      description: Machine-readable attestation schema (ARF 3.0 / TS11 §4.3.1 SchemaMeta).
+      properties:
+        id:
+          type: string
+        version:
+          type: string
+        rulebookUri:
+          type: string
+        trustedAuthorities:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrustAuthority"
+        attestationLoS:
+          type: string
+          enum: [iso_18045_high, iso_18045_moderate, iso_18045_enhanced-basic, iso_18045_basic]
+        bindingType:
+          type: string
+          enum: [claim, key, biometric, none]
+        supportedFormats:
+          type: array
+          items:
+            type: string
+            enum: ["dc+sd-jwt", mso_mdoc]
+        schemas:
+          type: array
+          items:
+            $ref: "#/components/schemas/FormatSchema"
+    FormatSchema:
+      type: object
+      description: The claim set for one issuance format (TS11 §4.3.2 Schema).
+      properties:
+        format:
+          type: string
+          enum: ["dc+sd-jwt", mso_mdoc]
+        typeIdentifier:
+          type: string
+          description: vct for SD-JWT VC, mdoc doctype for mso_mdoc.
+        claims:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClaimDefinition"
+    ClaimDefinition:
+      type: object
+      properties:
+        dataIdentifier:
+          type: string
+        path:
+          type: array
+          items:
+            type: string
+        dataType:
+          type: string
+        presence:
+          type: string
+          enum: [mandatory, optional, conditional]
+        namespace:
+          type: string
+          description: mdoc claims only.
+        disclosability:
+          type: string
+          enum: ["MUST", "MAY", "MUST NOT"]
+          description: SD-JWT VC claims only (ARB_30).
+    TrustAuthority:
+      type: object
+      properties:
+        frameworkType:
+          type: string
+          enum: [aki, etsi_tl, openid_federation]
+        value:
+          type: string
+        isLoTE:
+          type: boolean

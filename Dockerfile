@@ -7,5 +7,5 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/registry ./cmd/reg
 
 FROM scratch
 COPY --from=build /out/registry /registry
-EXPOSE 8090
+EXPOSE 8080
 ENTRYPOINT ["/registry"]
