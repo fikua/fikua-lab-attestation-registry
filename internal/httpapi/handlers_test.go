@@ -27,7 +27,7 @@ func TestHealthz(t *testing.T) {
 	srv := newTestServer(t)
 	defer srv.Close()
 
-	resp, err := http.Get(srv.URL + "/healthz")
+	resp, err := http.Get(srv.URL + "/health")
 	if err != nil {
 		t.Fatal(err)
 	}

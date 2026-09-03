@@ -9,10 +9,10 @@ info:
   license:
     name: Proprietary
 paths:
-  /healthz:
+  /health:
     get:
       summary: Health check
-      operationId: healthz
+      operationId: health
       responses:
         "200":
           description: Service is healthy

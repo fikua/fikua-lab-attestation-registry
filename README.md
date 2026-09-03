@@ -30,7 +30,7 @@ make run          # http://localhost:8080
 | GET | `/api/v1/schemes` | List all attestation definitions |
 | GET | `/api/v1/schemes/{id}` | One definition, by scheme id (this registry's own format) |
 | GET | `/api/v1/schemes/{id}/type-metadata` | SD-JWT VC Type Metadata Document for that scheme (404 if it has no `dc+sd-jwt` format) |
-| GET | `/healthz` | Health check |
+| GET | `/health` | Health check |
 | GET | `/openapi.yaml` | OpenAPI spec |
 | GET | `/swagger` | Swagger UI |
 
@@ -68,7 +68,7 @@ CI/CD mirrors `fikua/niu`'s pipeline:
    release (gated behind the `prd` GitHub Environment's required
    reviewers). SSHes into the VPS through a Cloudflare Access tunnel,
    syncs `compose.yaml` to `/opt/vps/projects/fikua-lab-attestation-registry/`,
-   runs `docker compose pull && up -d`, then polls `/healthz`.
+   runs `docker compose pull && up -d`, then polls `/health`.
 
 Public at `https://attestation-registry.fikua.com` — a plain
 Cloudflare-proxied A record straight to Traefik, same pattern as `niu` and

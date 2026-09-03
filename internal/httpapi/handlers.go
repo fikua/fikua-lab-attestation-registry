@@ -25,7 +25,7 @@ type Handler struct {
 // {basePath}/swagger page. basePath is only relevant to the browser-facing
 // /swagger page (which needs to know where to fetch the spec from when
 // reached through a reverse-proxying Worker); the JSON endpoints
-// (/api/v1/schemes, /healthz) are consumed directly by issuer/verifier at
+// (/api/v1/schemes, /health) are consumed directly by issuer/verifier at
 // this service's own hostname and are unaffected by it. Pass "" when
 // served at the root (local dev, direct access).
 func NewHandler(c *catalogue.Catalogue, spec []byte, basePath string) *Handler {
@@ -40,7 +40,7 @@ func (h *Handler) Routes(mux *http.ServeMux) {
 	// {id...} — allows a further static segment (/type-metadata) after it.
 	mux.HandleFunc("GET /api/v1/schemes/{id}", h.getScheme)
 	mux.HandleFunc("GET /api/v1/schemes/{id}/type-metadata", h.getTypeMetadata)
-	mux.HandleFunc("GET /healthz", h.health)
+	mux.HandleFunc("GET /health", h.health)
 	mux.HandleFunc("GET "+h.basePath+"/openapi.yaml", h.openAPISpec)
 	mux.HandleFunc("GET "+h.basePath+"/swagger", h.swaggerUI)
 }
