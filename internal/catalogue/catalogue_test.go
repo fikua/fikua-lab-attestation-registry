@@ -114,3 +114,46 @@ func TestUnknownSchemeIDReturnsError(t *testing.T) {
 		t.Fatal("expected error for unknown scheme id")
 	}
 }
+
+// TestEveryDefinitionDeclaresRevocation guards Rulebook template §6
+// (SHALL): every Rulebook must state whether attestations are short-lived
+// enough that revocation is never necessary, or which mechanism applies.
+func TestEveryDefinitionDeclaresRevocation(t *testing.T) {
+	cat := loadBundled(t)
+	for _, def := range cat.All() {
+		if def.Rulebook.Revocation == "" {
+			t.Errorf("%s: Rulebook.Revocation must be set (template §6 SHALL)", def.Scheme.ID)
+		}
+	}
+}
+
+// TestEveryDefinitionHasACatalogueUUID guards TS11 §4.3.1: SchemaMeta.id is
+// an opaque UUID assigned by the catalogue provider, distinct from this
+// registry's own human-readable lookup id.
+func TestEveryDefinitionHasACatalogueUUID(t *testing.T) {
+	cat := loadBundled(t)
+	for _, def := range cat.All() {
+		if def.Scheme.CatalogueID == "" {
+			t.Errorf("%s: Scheme.CatalogueID must be set (TS11 §4.3.1 SchemaMeta.id)", def.Scheme.ID)
+		}
+	}
+}
+
+func TestAttestationLegalCategoryIsConstrainedToPID(t *testing.T) {
+	cat := loadBundled(t)
+	pid, err := cat.Get("urn:eudi:pid:1")
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+
+	for _, format := range []model.CredentialFormat{model.FormatSDJWTVC, model.FormatMDoc} {
+		schema := pid.Scheme.SchemaFor(format)
+		claim := schema.Claim("attestation_legal_category")
+		if claim == nil {
+			t.Fatalf("%s: attestation_legal_category claim not found", format)
+		}
+		if len(claim.Enum) != 1 || claim.Enum[0] != "PID" {
+			t.Errorf("%s: attestation_legal_category enum = %v, want [PID] (Rulebook §2.6)", format, claim.Enum)
+		}
+	}
+}

@@ -19,6 +19,14 @@ const (
 	CategoryNonQualifiedEAA AttestationCategory = "eaa:eu:non-qualified"
 )
 
+// ETSICategoryMdocNamespace is the mdoc namespace mandated by ETSI TS 119
+// 472-2 clause 6.2.2.1 for the `category` attribute's ClaimDefinition when
+// an EAA supports mso_mdoc. Not used by any bundled definition yet (none
+// currently supports mdoc), but is the exact, spec-mandated value any
+// future EAA's mdoc FormatSchema.Claims[category].Namespace must use — do
+// not invent a different namespace for it.
+const ETSICategoryMdocNamespace = "org.etsi.01947201.010101"
+
 // Presence states whether an attribute or claim is required, per the
 // Attestation Rulebook template §2.
 type Presence string

@@ -26,6 +26,13 @@ The domain model in `internal/model` mirrors TS11 §4.3 (`SchemaMeta` →
 `AttestationScheme`, `Schema` → `FormatSchema`, `TrustAuthority`) and the
 Attestation Rulebook template's required fields (`AttestationRulebook`).
 
+See [docs/compliance/arf-3.0-etsi-119472-compliance.md](docs/compliance/arf-3.0-etsi-119472-compliance.md)
+for the requirement-by-requirement compliance review — what's covered,
+what's a deliberate deviation (and why), and what's an open gap. **Update
+that document whenever you change `internal/model` or add/edit a bundled
+definition** — it's the record of what this registry actually claims to
+comply with, not just what it was designed to.
+
 ## Architecture
 
 ```text

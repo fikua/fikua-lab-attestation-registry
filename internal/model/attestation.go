@@ -25,6 +25,11 @@ type ClaimDefinition struct {
 	Presence       Presence       `json:"presence"`
 	Namespace      string         `json:"namespace,omitempty"`
 	Disclosability Disclosability `json:"disclosability,omitempty"`
+	// Enum restricts the claim's value to this fixed set, when the
+	// Rulebook or an external spec (e.g. ETSI TS 119 472-1's fixed
+	// "PID"/"QEAA"/... category-style values) mandates specific literal
+	// values rather than a free-form DataType. Empty when unconstrained.
+	Enum []string `json:"enum,omitempty"`
 }
 
 // FormatSchema is the ARF 3.0 / TS11 §4.3.2 Schema: the claim set for one
@@ -51,7 +56,17 @@ func (s FormatSchema) Claim(dataIdentifier string) *ClaimDefinition {
 // machine-readable attestation schema. Pairs with a human-readable
 // AttestationRulebook via RulebookURI.
 type AttestationScheme struct {
+	// ID is this registry's lookup/URL identifier — a human-readable value
+	// (a vct or mdoc doctype), used in GET /api/v1/schemes/{id}. TS11
+	// §4.3.1 instead specifies SchemaMeta.id as an opaque UUID assigned by
+	// the catalogue provider at registration time; CatalogueID carries
+	// that. This registry deliberately keeps ID as the primary lookup key
+	// since it has no external registration workflow (there is no separate
+	// "the Commission assigns you a UUID" step here) and a human-readable
+	// URL is far more usable for a small, internally-run registry — see
+	// docs/compliance/*.md for the full rationale.
 	ID                 string             `json:"id"`
+	CatalogueID        string             `json:"catalogueId,omitempty"`
 	Version            string             `json:"version"`
 	RulebookURI        string             `json:"rulebookUri,omitempty"`
 	TrustedAuthorities []TrustAuthority   `json:"trustedAuthorities,omitempty"`
@@ -86,6 +101,21 @@ type AttestationRulebook struct {
 	LegalBasis      []string            `json:"legalBasis,omitempty"`
 	Category        AttestationCategory `json:"category,omitempty"`
 	DocumentURI     string              `json:"documentUri,omitempty"`
+	// Revocation is SHALL-required by the Rulebook template §6: every
+	// Rulebook must state whether attestations are short-lived enough that
+	// revocation is never necessary, or which revocation mechanism applies.
+	Revocation RevocationMethod `json:"revocation,omitempty"`
+	// RevocationListURL is the domain/URL at which Relying Parties can
+	// retrieve the relevant Attestation Status List or Attestation
+	// Revocation List, SHALL-required by §6 for revocable attestations.
+	// Empty when Revocation is RevocationNotApplicableShortLived.
+	RevocationListURL string `json:"revocationListUrl,omitempty"`
+	// TrustAnchorDescription is the §5 (Trust anchors) prose: how a Relying
+	// Party obtains and uses the trust anchor to verify this attestation
+	// type. SHOULD-required for non-qualified EAAs (ARB_26); PIDs/QEAAs/
+	// Pub-EAAs instead rely on the LoTL/Trusted List mechanism described in
+	// ARF §6.6.3.6 and referenced via Scheme.TrustedAuthorities.
+	TrustAnchorDescription string `json:"trustAnchorDescription,omitempty"`
 }
 
 // Definition is one catalogue entry: the pairing of a human-readable

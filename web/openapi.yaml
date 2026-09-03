@@ -131,10 +131,30 @@ components:
             - "eaa:eu:non-qualified"
         documentUri:
           type: string
+        revocation:
+          type: string
+          description: Rulebook template §6 (SHALL for every Rulebook).
+          enum:
+            - not_applicable_short_lived
+            - attestation_status_list
+            - attestation_revocation_list
+        revocationListUrl:
+          type: string
+          description: Where to retrieve the ASL/ARL. Empty when revocation is not_applicable_short_lived.
+        trustAnchorDescription:
+          type: string
+          description: Rulebook template §5 prose (SHOULD for non-qualified EAA, ARB_26).
     AttestationScheme:
       type: object
       description: Machine-readable attestation schema (ARF 3.0 / TS11 §4.3.1 SchemaMeta).
       properties:
+        catalogueId:
+          type: string
+          description: >
+            TS11 §4.3.1 SchemaMeta.id: an opaque UUID assigned by the
+            catalogue provider. `id` (below) is this registry's own
+            human-readable lookup/URL identifier instead — see
+            docs/compliance/*.md for why they're kept separate.
         id:
           type: string
         version:
@@ -195,6 +215,15 @@ components:
           type: string
           enum: ["MUST", "MAY", "MUST NOT"]
           description: SD-JWT VC claims only (ARB_30).
+        enum:
+          type: array
+          items:
+            type: string
+          description: >
+            Restricts the claim's value to this fixed set, when the
+            Rulebook or an external spec mandates specific literal values
+            (e.g. ETSI TS 119 472-1's fixed category-style values). Empty
+            when unconstrained.
     TrustAuthority:
       type: object
       properties:

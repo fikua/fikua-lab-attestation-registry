@@ -8,10 +8,14 @@
       "CIR 2024/2977",
       "Regulation (EU) 2024/1183"
     ],
-    "documentUri": "https://github.com/eu-digital-identity-wallet/eudi-doc-attestation-rulebooks-catalog/blob/main/rulebooks/pid/pid-rulebook.md"
+    "documentUri": "https://github.com/eu-digital-identity-wallet/eudi-doc-attestation-rulebooks-catalog/blob/main/rulebooks/pid/pid-rulebook.md",
+    "revocation": "attestation_status_list",
+    "revocationListUrl": "https://ec.europa.eu/tools/lotl/eu-lotl.xml",
+    "trustAnchorDescription": "PID trust anchors are public keys and associated information, needed by Relying Parties to verify the authenticity of any PID attributes they obtain from Wallet Units. Member States notify each PID Provider to the Commission per CIR 2024/2980; the Commission publishes notified PID Providers' trust anchors in a publicly available Trusted List (see trustedAuthorities), from which Relying Parties retrieve them."
   },
   "scheme": {
     "id": "urn:eudi:pid:1",
+    "catalogueId": "6c67113c-6536-4a85-b0b9-58d8793ddd5c",
     "version": "1.7",
     "rulebookUri": "https://github.com/eu-digital-identity-wallet/eudi-doc-attestation-rulebooks-catalog/blob/main/rulebooks/pid/pid-rulebook.md",
     "trustedAuthorities": [
@@ -45,7 +49,7 @@
           { "dataIdentifier": "resident_street", "path": ["address", "street_address"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
           { "dataIdentifier": "family_name_birth", "path": ["birth_family_name"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
           { "dataIdentifier": "given_name_birth", "path": ["birth_given_name"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
-          { "dataIdentifier": "sex", "path": ["sex"], "dataType": "number (ISO/IEC 5218)", "presence": "optional", "disclosability": "MUST" },
+          { "dataIdentifier": "sex", "path": ["sex"], "dataType": "number (ISO/IEC 5218)", "presence": "optional", "disclosability": "MUST", "enum": ["0", "1", "2", "3", "4", "5", "6", "9"] },
           { "dataIdentifier": "email_address", "path": ["email"], "dataType": "string (RFC 5322)", "presence": "optional", "disclosability": "MUST" },
           { "dataIdentifier": "mobile_phone_number", "path": ["phone_number"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
           { "dataIdentifier": "personal_administrative_number", "path": ["personal_administrative_number"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
@@ -54,7 +58,7 @@
           { "dataIdentifier": "document_number", "path": ["document_number"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
           { "dataIdentifier": "issuing_jurisdiction", "path": ["issuing_jurisdiction"], "dataType": "string", "presence": "optional", "disclosability": "MUST" },
           { "dataIdentifier": "trust_anchor", "path": ["trust_anchor"], "dataType": "string (URI)", "presence": "optional", "disclosability": "MUST NOT" },
-          { "dataIdentifier": "attestation_legal_category", "path": ["attestation_legal_category"], "dataType": "string", "presence": "optional", "disclosability": "MUST NOT" }
+          { "dataIdentifier": "attestation_legal_category", "path": ["attestation_legal_category"], "dataType": "string", "presence": "optional", "disclosability": "MUST NOT", "enum": ["PID"] }
         ]
       },
       {
@@ -77,7 +81,7 @@
           { "dataIdentifier": "resident_street", "path": ["resident_street"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
           { "dataIdentifier": "family_name_birth", "path": ["family_name_birth"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
           { "dataIdentifier": "given_name_birth", "path": ["given_name_birth"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
-          { "dataIdentifier": "sex", "path": ["sex"], "dataType": "uint", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
+          { "dataIdentifier": "sex", "path": ["sex"], "dataType": "uint", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1", "enum": ["0", "1", "2", "3", "4", "5", "6", "9"] },
           { "dataIdentifier": "email_address", "path": ["email_address"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
           { "dataIdentifier": "mobile_phone_number", "path": ["mobile_phone_number"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
           { "dataIdentifier": "personal_administrative_number", "path": ["personal_administrative_number"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
@@ -86,7 +90,7 @@
           { "dataIdentifier": "document_number", "path": ["document_number"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
           { "dataIdentifier": "issuing_jurisdiction", "path": ["issuing_jurisdiction"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
           { "dataIdentifier": "trust_anchor", "path": ["trust_anchor"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" },
-          { "dataIdentifier": "attestation_legal_category", "path": ["attestation_legal_category"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1" }
+          { "dataIdentifier": "attestation_legal_category", "path": ["attestation_legal_category"], "dataType": "tstr", "presence": "optional", "namespace": "eu.europa.ec.eudi.pid.1", "enum": ["PID"] }
         ]
       }
     ]

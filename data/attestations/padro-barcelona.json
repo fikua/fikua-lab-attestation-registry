@@ -9,10 +9,13 @@
       "Reglamento de Población y Demarcación Territorial de las Entidades Locales (RD 1690/1986), art. 53-77",
       "Resolución de 17 de febrero de 2020 (INE/DGCG) sobre gestión del Padrón municipal"
     ],
-    "category": "eaa:eu:non-qualified"
+    "category": "eaa:eu:non-qualified",
+    "revocation": "not_applicable_short_lived",
+    "trustAnchorDescription": "Prototype/lab attestation: no production trust anchor infrastructure exists yet. A production issuer of this attestation type would need to publish its trust anchor per ARB_21 (Rulebook template §5) — e.g. via a List of Trusted Entities per ETSI TS 119 602, since this is a non-qualified EAA and therefore not eligible for the LoTL/Trusted List mechanism used by PIDs, QEAAs, and Pub-EAAs."
   },
   "scheme": {
     "id": "urn:fikua:padro:barcelona:1",
+    "catalogueId": "f91b64f9-67ce-4c25-85e2-c8acb71c4f0a",
     "version": "0.1",
     "trustedAuthorities": [],
     "attestationLoS": "iso_18045_moderate",
@@ -75,9 +78,10 @@
             "path": [
               "document_type"
             ],
-            "dataType": "string (enum: DNI, NIE, PASSPORT)",
+            "dataType": "string",
             "presence": "mandatory",
-            "disclosability": "MUST"
+            "disclosability": "MUST",
+            "enum": ["DNI", "NIE", "PASSPORT"]
           },
           {
             "dataIdentifier": "document_number",

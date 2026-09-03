@@ -12,8 +12,10 @@ Standalone Go service (no dependency on `fikua-lab`'s Java backend) that:
 - serves a human-readable Attestation Rulebook browser, since a Rulebook is meant for people
 - serves a Swagger UI for the JSON API
 
-Currently defines: EUDI PID (SD-JWT VC), EUDI PID (mdoc), and a non-qualified EAA
-prototype for the Barcelona municipal padró (SD-JWT VC).
+Currently defines: EUDI PID (one attestation type, SD-JWT VC and mdoc
+formats) and a non-qualified EAA prototype for the Barcelona municipal
+padró (SD-JWT VC). See [Compliance](#compliance) below for how these map
+to the normative sources.
 
 ## Run
 
@@ -80,3 +82,15 @@ Required repo secrets (same as `fikua/niu`): `DOCKER_USERNAME`,
 `CF_ACCESS_CLIENT_SECRET` (the last two are for tunnelling **SSH access to
 the VPS** during deploy, via Cloudflare Access — unrelated to how the
 service itself is publicly reached).
+
+## Compliance
+
+[docs/compliance/arf-3.0-etsi-119472-compliance.md](docs/compliance/arf-3.0-etsi-119472-compliance.md)
+tracks, requirement by requirement, how the bundled attestation
+definitions and domain model map to ARF 3.0, the PID Rulebook, the
+Attestation Rulebook template, TS11, ETSI TS 119 472-1, and CIR
+2024/2977 — including the gaps and deliberate deviations that remain
+(mdoc DocType documents, CDDL-level value constraints, the catalogue-id
+vs. lookup-id distinction). Read it before assuming any definition here
+is production-ready or before adding a new one — the same requirements
+apply.
