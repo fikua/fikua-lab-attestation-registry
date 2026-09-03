@@ -5,6 +5,7 @@ import (
 
 	"github.com/fikua/fikua-lab-attestation-registry/data/attestations"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/catalogue"
+	"github.com/fikua/fikua-lab-attestation-registry/internal/model"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/sdjwtvc"
 )
 
@@ -81,10 +82,20 @@ func TestFromSchemeMapsDisclosabilityToSpecVocabulary(t *testing.T) {
 }
 
 func TestFromSchemeFailsForMdocOnlyScheme(t *testing.T) {
-	cat := loadBundled(t)
-	def, err := cat.Get("eu.europa.ec.eudi.pid.1")
-	if err != nil {
-		t.Fatalf("Get: %v", err)
+	// A hypothetical mdoc-only definition (e.g. mDL, which has no SD-JWT VC
+	// form): built by hand since none of our bundled definitions are
+	// mdoc-only after the PID sd-jwt+mdoc merge (TS11 §4.3.1 models one
+	// attestation type with multiple format Schemas, not one scheme id per
+	// format).
+	def := model.Definition{
+		Rulebook: model.AttestationRulebook{AttestationType: "Hypothetical mdoc-only type"},
+		Scheme: model.AttestationScheme{
+			ID:               "org.example.mdoc-only.1",
+			SupportedFormats: []model.CredentialFormat{model.FormatMDoc},
+			Schemas: []model.FormatSchema{
+				{Format: model.FormatMDoc, TypeIdentifier: "org.example.mdoc-only.1"},
+			},
+		},
 	}
 
 	if _, err := sdjwtvc.FromScheme(def); err == nil {

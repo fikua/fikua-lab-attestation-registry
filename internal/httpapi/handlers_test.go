@@ -37,7 +37,7 @@ func TestHealthz(t *testing.T) {
 	}
 }
 
-func TestListSchemesReturnsAllThree(t *testing.T) {
+func TestListSchemesReturnsAllTwo(t *testing.T) {
 	srv := newTestServer(t)
 	defer srv.Close()
 
@@ -51,8 +51,8 @@ func TestListSchemesReturnsAllThree(t *testing.T) {
 	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
 		t.Fatal(err)
 	}
-	if len(body) != 3 {
-		t.Fatalf("got %d definitions, want 3", len(body))
+	if len(body) != 2 {
+		t.Fatalf("got %d definitions, want 2", len(body))
 	}
 }
 
@@ -106,11 +106,11 @@ func TestGetTypeMetadataForSdJwtScheme(t *testing.T) {
 	}
 }
 
-func TestGetTypeMetadataForMdocOnlySchemeReturns404(t *testing.T) {
+func TestGetTypeMetadataForUnknownSchemeReturns404(t *testing.T) {
 	srv := newTestServer(t)
 	defer srv.Close()
 
-	resp, err := http.Get(srv.URL + "/api/v1/schemes/eu.europa.ec.eudi.pid.1/type-metadata")
+	resp, err := http.Get(srv.URL + "/api/v1/schemes/does-not-exist/type-metadata")
 	if err != nil {
 		t.Fatal(err)
 	}
