@@ -84,6 +84,42 @@ func TestGetUnknownSchemeReturns404(t *testing.T) {
 	}
 }
 
+func TestGetTypeMetadataForSdJwtScheme(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/api/v1/schemes/urn:eudi:pid:1/type-metadata")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+
+	var body map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if body["vct"] != "urn:eudi:pid:1" {
+		t.Errorf("vct = %v, want urn:eudi:pid:1", body["vct"])
+	}
+}
+
+func TestGetTypeMetadataForMdocOnlySchemeReturns404(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/api/v1/schemes/eu.europa.ec.eudi.pid.1/type-metadata")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", resp.StatusCode)
+	}
+}
+
 func TestOpenAPISpecIsServed(t *testing.T) {
 	srv := newTestServer(t)
 	defer srv.Close()

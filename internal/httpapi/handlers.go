@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/fikua/fikua-lab-attestation-registry/internal/catalogue"
+	"github.com/fikua/fikua-lab-attestation-registry/internal/sdjwtvc"
 )
 
 // Handler serves the attestation catalogue over HTTP.
@@ -34,7 +35,11 @@ func NewHandler(c *catalogue.Catalogue, spec []byte, basePath string) *Handler {
 // Routes registers this handler's endpoints on mux.
 func (h *Handler) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/schemes", h.listSchemes)
-	mux.HandleFunc("GET /api/v1/schemes/{id...}", h.getScheme)
+	// {id} matches a single path segment; every scheme id we define uses
+	// ":" (URN-style) but never "/", so this is sufficient and — unlike
+	// {id...} — allows a further static segment (/type-metadata) after it.
+	mux.HandleFunc("GET /api/v1/schemes/{id}", h.getScheme)
+	mux.HandleFunc("GET /api/v1/schemes/{id}/type-metadata", h.getTypeMetadata)
 	mux.HandleFunc("GET /healthz", h.health)
 	mux.HandleFunc("GET "+h.basePath+"/openapi.yaml", h.openAPISpec)
 	mux.HandleFunc("GET "+h.basePath+"/swagger", h.swaggerUI)
@@ -52,6 +57,26 @@ func (h *Handler) getScheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, definition)
+}
+
+// getTypeMetadata serves the SD-JWT VC Type Metadata Document for a scheme's
+// dc+sd-jwt format, per the SD-JWT VC spec's "Registry" retrieval method —
+// this registry IS that registry. 404s for schemes with no SD-JWT VC format
+// (e.g. the PID mdoc scheme), since Type Metadata is only defined for
+// SD-JWT VC.
+func (h *Handler) getTypeMetadata(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	definition, err := h.catalogue.Get(id)
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+		return
+	}
+	metadata, err := sdjwtvc.FromScheme(definition)
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, metadata)
 }
 
 func (h *Handler) health(w http.ResponseWriter, r *http.Request) {

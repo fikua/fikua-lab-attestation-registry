@@ -23,13 +23,24 @@ make run          # http://localhost:8080
 
 ## API
 
-| Method | Path                     | Description                          |
-|--------|--------------------------|---------------------------------------|
-| GET    | `/api/v1/schemes`        | List all attestation definitions      |
-| GET    | `/api/v1/schemes/{id}`   | One definition, by scheme id          |
-| GET    | `/healthz`               | Health check                          |
-| GET    | `/openapi.yaml`          | OpenAPI spec                          |
-| GET    | `/swagger`               | Swagger UI                            |
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/schemes` | List all attestation definitions |
+| GET | `/api/v1/schemes/{id}` | One definition, by scheme id (this registry's own format) |
+| GET | `/api/v1/schemes/{id}/type-metadata` | SD-JWT VC Type Metadata Document for that scheme (404 if it has no `dc+sd-jwt` format) |
+| GET | `/healthz` | Health check |
+| GET | `/openapi.yaml` | OpenAPI spec |
+| GET | `/swagger` | Swagger UI |
+
+`/api/v1/schemes/{id}` returns this registry's own internal representation
+(`AttestationRulebook` + `AttestationScheme`), useful for browsing and for
+the human-facing UI. It is **not** a standards-defined credential schema
+format. `/api/v1/schemes/{id}/type-metadata` is: it's a real [SD-JWT VC
+Type Metadata Document](https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-latest.html#name-sd-jwt-vc-type-metadata),
+suitable for a Wallet or Verifier to fetch via the spec's "Registry"
+retrieval method — this service acts as that registry for any `vct` it
+defines. There is no equivalent generator yet for mdoc (ISO 23220-2
+DocType) — see `CLAUDE.md`.
 
 ## UI
 

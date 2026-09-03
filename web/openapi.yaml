@@ -66,6 +66,38 @@ paths:
                 properties:
                   error:
                     type: string
+  /api/v1/schemes/{id}/type-metadata:
+    get:
+      summary: >
+        Get the SD-JWT VC Type Metadata Document for a scheme's dc+sd-jwt
+        format, per the SD-JWT VC specification's "Registry" retrieval
+        method (this registry IS that registry — see
+        https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-latest.html#name-sd-jwt-vc-type-metadata).
+        Only defined for schemes that support dc+sd-jwt; 404 otherwise
+        (e.g. the PID mdoc scheme).
+      operationId: getTypeMetadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: SD-JWT VC Type Metadata Document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TypeMetadata"
+        "404":
+          description: No such scheme, or the scheme has no dc+sd-jwt format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
 components:
   schemas:
     AttestationDefinition:
@@ -173,3 +205,45 @@ components:
           type: string
         isLoTE:
           type: boolean
+    TypeMetadata:
+      type: object
+      description: >
+        SD-JWT VC Type Metadata Document, per
+        https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-latest.html#name-type-metadata-format.
+        This registry only populates vct/name/description/display/claims;
+        the spec allows additional properties not listed here.
+      properties:
+        vct:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        display:
+          type: array
+          items:
+            type: object
+            properties:
+              locale:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+        claims:
+          type: array
+          items:
+            $ref: "#/components/schemas/TypeMetadataClaim"
+    TypeMetadataClaim:
+      type: object
+      description: One claim's metadata, per the spec's "Claim Metadata" section.
+      properties:
+        path:
+          type: array
+          items:
+            type: string
+        mandatory:
+          type: boolean
+        sd:
+          type: string
+          enum: [always, allowed, never]

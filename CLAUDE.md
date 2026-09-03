@@ -32,11 +32,29 @@ Attestation Rulebook template's required fields (`AttestationRulebook`).
 cmd/registry/            entrypoint: wiring only, no logic
 internal/model/          domain types (Rulebook, Scheme, ClaimDefinition, enums) — no I/O
 internal/catalogue/      in-memory registry + JSON loader (embed.FS) + claims validator
+internal/sdjwtvc/        converts model.Definition into a real SD-JWT VC Type Metadata Document
 internal/httpapi/        JSON API for machine consumers (issuer, verifier)
 internal/webui/          human-facing rulebook browser (html/template)
 data/attestations/*.json one file per attestation type — the actual catalogue content
 web/templates/, web/static/  UI assets, embedded into the binary
 ```
+
+**Important distinction:** `model.AttestationScheme`/`FormatSchema` is this
+registry's own internal representation — useful for the UI and for
+browsing, but it is **not** a standards-defined credential schema. TS11
+§4.3.1-4.3.2 models one logical `SchemaMeta` (→ `AttestationScheme`) with
+one `Schema` (→ `FormatSchema`) *per supported format*, each of whose `uri`
+should point at the actual format-native schema document: an SD-JWT VC
+[Type Metadata Document](https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-latest.html#name-sd-jwt-vc-type-metadata)
+for `dc+sd-jwt`, an ISO 23220-2 DocType for `mso_mdoc`. `internal/sdjwtvc`
+generates the former from our internal model, served at
+`/api/v1/schemes/{id}/type-metadata` — this registry acts as the spec's
+"Registry" retrieval method (§"Retrieving Type Metadata"). **There is no
+generator for the mdoc DocType yet** — `FormatMDoc` schemes only expose
+this registry's internal `ClaimDefinition` shape, not a real ISO 23220-2
+document. Add one the same way (a new `internal/isomdoc` package, mirroring
+`internal/sdjwtvc`'s `FromScheme` pattern) if/when mdoc interop with a real
+Wallet/Verifier is needed.
 
 - **No ORM, no database.** The catalogue is read-only, defined by the JSON
   files under `data/attestations/`, embedded into the binary at build time.
