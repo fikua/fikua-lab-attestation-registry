@@ -1,6 +1,7 @@
 package sdjwtvc_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/fikua/fikua-lab-attestation-registry/data/attestations"
@@ -98,7 +99,48 @@ func TestFromSchemeFailsForMdocOnlyScheme(t *testing.T) {
 		},
 	}
 
-	if _, err := sdjwtvc.FromScheme(def); err == nil {
+	_, err := sdjwtvc.FromScheme(def)
+	if err == nil {
 		t.Fatal("expected an error for a scheme with no dc+sd-jwt format")
+	}
+	if !strings.Contains(err.Error(), def.Scheme.ID) {
+		t.Errorf("error message %q should name the scheme id %q", err.Error(), def.Scheme.ID)
+	}
+}
+
+func TestIntegrityIsStableAndChangesWithContent(t *testing.T) {
+	cat := loadBundled(t)
+	def, err := cat.Get("urn:eudi:pid:1")
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	tm, err := sdjwtvc.FromScheme(def)
+	if err != nil {
+		t.Fatalf("FromScheme: %v", err)
+	}
+
+	first, err := sdjwtvc.Integrity(tm)
+	if err != nil {
+		t.Fatalf("Integrity: %v", err)
+	}
+	if !strings.HasPrefix(first, "sha256-") {
+		t.Fatalf("Integrity value %q should be prefixed sha256-", first)
+	}
+
+	second, err := sdjwtvc.Integrity(tm)
+	if err != nil {
+		t.Fatalf("Integrity (second call): %v", err)
+	}
+	if first != second {
+		t.Errorf("Integrity should be deterministic for the same content: %q != %q", first, second)
+	}
+
+	tm.Name = tm.Name + " (modified)"
+	changed, err := sdjwtvc.Integrity(tm)
+	if err != nil {
+		t.Fatalf("Integrity (modified): %v", err)
+	}
+	if changed == first {
+		t.Error("Integrity should change when the metadata content changes")
 	}
 }
