@@ -10,6 +10,12 @@
 package sdjwtvc
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+
 	"github.com/fikua/fikua-lab-attestation-registry/internal/model"
 )
 
@@ -103,6 +109,26 @@ func toSelectiveDisclosure(d model.Disclosability) SelectiveDisclosure {
 	default:
 		return SDAllowed
 	}
+}
+
+// Integrity computes the W3C Subresource Integrity value ("sha256-<base64
+// digest>") for metadata's exact JSON encoding, matching what httpapi's
+// writeJSON serializes over the wire (json.Encoder, including its trailing
+// newline) — so a consumer that fetches the document and checks it against
+// the "#integrity=<value>" suffix httpapi appends to Schema.uri (TS11
+// §4.3.1/§4.3.2: "the URI MAY be suffixed with #integrity, the value of
+// which SHALL be an 'integrity metadata' string as defined in Section 3 of
+// [W3C SRI]") sees a match. This is distinct from SD-JWT VC §7's own
+// `vct#integrity` token claim, a sibling JSON claim inside the credential
+// itself, not a URL fragment — that one is the issuer's responsibility, not
+// this registry's. Recompute whenever the served encoding changes.
+func Integrity(metadata *TypeMetadata) (string, error) {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(metadata); err != nil {
+		return "", fmt.Errorf("sdjwtvc: encoding type metadata for integrity: %w", err)
+	}
+	sum := sha256.Sum256(buf.Bytes())
+	return "sha256-" + base64.StdEncoding.EncodeToString(sum[:]), nil
 }
 
 type errNoSDJWTFormat string

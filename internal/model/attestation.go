@@ -32,9 +32,19 @@ type ClaimDefinition struct {
 	Enum []string `json:"enum,omitempty"`
 }
 
-// FormatSchema is the ARF 3.0 / TS11 §4.3.2 Schema: the claim set for one
-// issuance format of an attestation type. TypeIdentifier is the `vct` for
-// FormatSDJWTVC or the mdoc doctype for FormatMDoc (TS11 §4.3.4).
+// FormatSchema is this registry's own internal, richer representation of one
+// issuance format's claim set — NOT the TS11 §4.3.2 Schema sub-class itself.
+// TS11's Schema is just {formatIdentifier, uri}, a pointer to an external,
+// format-native document (SD-JWT VC Type Metadata, ISO 23220-2 DocType, ...)
+// served as an appendix of the Attestation Rulebook (§4.3.4); this struct is
+// the source data internal/sdjwtvc.FromScheme (and, when built, an
+// ISO 23220-2 generator) renders into that document. internal/httpapi
+// projects AttestationScheme.Schemas into the spec-shaped {formatIdentifier,
+// uri} pairs at the HTTP boundary, where the uri can be computed from the
+// request's host/basePath — see httpapi.schemaURIs.
+//
+// TypeIdentifier is the `vct` for FormatSDJWTVC or the mdoc doctype for
+// FormatMDoc (TS11 §4.3.4).
 type FormatSchema struct {
 	Format         CredentialFormat  `json:"format"`
 	TypeIdentifier string            `json:"typeIdentifier"`
@@ -54,7 +64,10 @@ func (s FormatSchema) Claim(dataIdentifier string) *ClaimDefinition {
 
 // AttestationScheme is the ARF 3.0 / TS11 §4.3.1 SchemaMeta: the
 // machine-readable attestation schema. Pairs with a human-readable
-// AttestationRulebook via RulebookURI.
+// AttestationRulebook via RulebookURI. Schemas carries the claim content
+// this registry keeps internally, per format — see FormatSchema's doc
+// comment for how that differs from, and is projected into, TS11's own
+// Schema sub-class ({formatIdentifier, uri}) at the HTTP layer.
 type AttestationScheme struct {
 	// ID is this registry's lookup/URL identifier — a human-readable value
 	// (a vct or mdoc doctype), used in GET /api/v1/schemes/{id}. TS11
@@ -105,6 +118,17 @@ type AttestationRulebook struct {
 	// Rulebook must state whether attestations are short-lived enough that
 	// revocation is never necessary, or which revocation mechanism applies.
 	Revocation RevocationMethod `json:"revocation,omitempty"`
+	// MaxValiditySeconds is the maximum technical validity (issued-token
+	// exp minus iat/nbf) an issuer of this attestation type may set.
+	// Required when Revocation is RevocationNotApplicableShortLived: ARF
+	// 3.0 Topic 7 VCR_01b's "short-lived, so revocation is never
+	// necessary" basis is only valid for a validity period of 24 hours or
+	// less (ETSI EN 319 411-1 V1.4.1 REV-6.2.4-03A) — this field is what
+	// makes that claim verifiable instead of asserted. This is the
+	// technical/protocol validity (the SD-JWT `exp` claim an issuer sets),
+	// distinct from any administrative validity claim a Rulebook may also
+	// model (e.g. the PID Rulebook's own `date_of_expiry` domain claim).
+	MaxValiditySeconds int64 `json:"maxValiditySeconds,omitempty"`
 	// RevocationListURL is the domain/URL at which Relying Parties can
 	// retrieve the relevant Attestation Status List or Attestation
 	// Revocation List, SHALL-required by §6 for revocable attestations.
@@ -116,6 +140,23 @@ type AttestationRulebook struct {
 	// Pub-EAAs instead rely on the LoTL/Trusted List mechanism described in
 	// ARF §6.6.3.6 and referenced via Scheme.TrustedAuthorities.
 	TrustAnchorDescription string `json:"trustAnchorDescription,omitempty"`
+	// ProximityUseCaseAnalysis is ARB_02's required documented analysis of
+	// whether this attestation type must be presentable when Wallet Unit
+	// and Relying Party are in proximity without internet connectivity —
+	// if so, the Rulebook SHALL specify mso_mdoc as a supported format,
+	// since OpenID4VP (the only presentation protocol for SD-JWT VC/W3C VC)
+	// cannot be used offline. ARB_02 requires the analysis to be performed
+	// and documented, not merely that the conclusion happen to be correct —
+	// this field is where that documented conclusion lives.
+	ProximityUseCaseAnalysis string `json:"proximityUseCaseAnalysis,omitempty"`
+	// DataSeparationStatement is eIDAS 2.0 Art. 45h's SHALL requirement
+	// (applies to qualified AND non-qualified EAA providers alike): "shall
+	// not combine personal data relating to the provision of those
+	// services with personal data from any other services offered by them
+	// or their commercial partners... kept logically separate." A Rulebook
+	// for a type touching personal data should state how the issuer meets
+	// this — who the issuer/processor are and what separation applies.
+	DataSeparationStatement string `json:"dataSeparationStatement,omitempty"`
 }
 
 // Definition is one catalogue entry: the pairing of a human-readable

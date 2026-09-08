@@ -66,20 +66,30 @@ paths:
                 properties:
                   error:
                     type: string
-  /api/v1/schemes/{id}/type-metadata:
+  /api/v1/schemes/{id}/{version}/type-metadata:
     get:
       summary: >
         Get the SD-JWT VC Type Metadata Document for a scheme's dc+sd-jwt
-        format, per the SD-JWT VC specification's "Registry" retrieval
-        method (this registry IS that registry — see
+        format at an exact version, per the SD-JWT VC specification's
+        "Registry" retrieval method (this registry IS that registry — see
         https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-latest.html#name-sd-jwt-vc-type-metadata).
-        Only defined for schemes that support dc+sd-jwt; 404 otherwise
-        (e.g. the PID mdoc scheme).
+        Immutable and version-addressed (FR-18/19/20): there is no
+        unversioned alias. version must match the scheme's current
+        `version` field (GET /api/v1/schemes/{id}); this registry does not
+        yet keep prior versions' content addressable. Only defined for
+        schemes that support dc+sd-jwt; 404 otherwise (e.g. the PID mdoc
+        scheme).
       operationId: getTypeMetadata
       parameters:
         - name: id
           in: path
           required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Must equal the scheme's current version exactly.
           schema:
             type: string
       responses:
@@ -90,7 +100,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/TypeMetadata"
         "404":
-          description: No such scheme, or the scheme has no dc+sd-jwt format
+          description: >
+            No such scheme, the scheme has no dc+sd-jwt format, or version
+            does not match the scheme's current version
           content:
             application/json:
               schema:
@@ -138,12 +150,36 @@ components:
             - not_applicable_short_lived
             - attestation_status_list
             - attestation_revocation_list
+        maxValiditySeconds:
+          type: integer
+          description: >
+            Maximum technical validity (issued-token exp-iat/nbf) an issuer
+            may set. Required, and must be ≤86400, when revocation is
+            not_applicable_short_lived (ARF 3.0 Topic 7 VCR_01b: the
+            short-lived basis for skipping revocation only holds for a
+            validity period of 24 hours or less, per ETSI EN 319 411-1
+            REV-6.2.4-03A).
         revocationListUrl:
           type: string
           description: Where to retrieve the ASL/ARL. Empty when revocation is not_applicable_short_lived.
         trustAnchorDescription:
           type: string
           description: Rulebook template §5 prose (SHOULD for non-qualified EAA, ARB_26).
+        proximityUseCaseAnalysis:
+          type: string
+          description: >
+            ARB_02's required documented analysis of whether this
+            attestation type must be presentable in proximity without
+            internet connectivity — if so, mso_mdoc must be a supported
+            format, since OpenID4VP (the only presentation protocol for
+            dc+sd-jwt/W3C VC) requires connectivity.
+        dataSeparationStatement:
+          type: string
+          description: >
+            eIDAS 2.0 Art. 45h's SHALL requirement (applies to non-qualified
+            EAA providers too): personal data used to issue this
+            attestation is not combined with personal data from any other
+            service the issuer or its commercial partners offer.
     AttestationScheme:
       type: object
       description: Machine-readable attestation schema (ARF 3.0 / TS11 §4.3.1 SchemaMeta).
@@ -176,13 +212,46 @@ components:
           items:
             type: string
             enum: ["dc+sd-jwt", mso_mdoc]
+        schemaURIs:
+          type: array
+          description: >
+            TS11 §4.3.2 Schema sub-class: {formatIdentifier, uri} pointers to
+            the format-native schema document for each supported format
+            (SD-JWT VC Type Metadata for dc+sd-jwt; mso_mdoc has no
+            generator yet, so its uri is empty). Computed per-request from
+            the request's host/basePath, not stored. Content lives at uri,
+            not here — contrast with `schemas` below, this registry's own
+            richer internal representation.
+          items:
+            $ref: "#/components/schemas/SchemaURI"
         schemas:
           type: array
+          description: >
+            This registry's own internal claim content per format — not the
+            TS11 Schema sub-class itself (see schemaURIs above for that).
+            Kept in the API response because fikua-lab-issuer/verifier
+            consume it directly.
           items:
             $ref: "#/components/schemas/FormatSchema"
+    SchemaURI:
+      type: object
+      description: TS11 §4.3.2 Schema sub-class — a pointer, not a container.
+      properties:
+        formatIdentifier:
+          type: string
+          enum: ["dc+sd-jwt", mso_mdoc]
+        uri:
+          type: string
+          description: >
+            Absolute URL of the format-native schema document. Empty when no
+            generator exists yet for that format (currently: mso_mdoc).
     FormatSchema:
       type: object
-      description: The claim set for one issuance format (TS11 §4.3.2 Schema).
+      description: >
+        This registry's own internal representation of one issuance
+        format's claim content — not the TS11 §4.3.2 Schema sub-class
+        itself (see SchemaURI above for that). Source data for
+        internal/sdjwtvc.FromScheme's generated Type Metadata Document.
       properties:
         format:
           type: string
