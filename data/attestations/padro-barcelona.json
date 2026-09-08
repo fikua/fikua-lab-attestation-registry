@@ -11,12 +11,16 @@
     ],
     "category": "eaa:eu:non-qualified",
     "revocation": "not_applicable_short_lived",
-    "trustAnchorDescription": "Prototype/lab attestation: no production trust anchor infrastructure exists yet. A production issuer of this attestation type would need to publish its trust anchor per ARB_21 (Rulebook template §5) — e.g. via a List of Trusted Entities per ETSI TS 119 602, since this is a non-qualified EAA and therefore not eligible for the LoTL/Trusted List mechanism used by PIDs, QEAAs, and Pub-EAAs."
+    "maxValiditySeconds": 86400,
+    "trustAnchorDescription": "Prototype/lab attestation: no production trust anchor infrastructure exists yet. A production issuer of this attestation type would need to publish its trust anchor per ARB_21 (Rulebook template §5) — e.g. via a List of Trusted Entities per ETSI TS 119 602, since this is a non-qualified EAA and therefore not eligible for the LoTL/Trusted List mechanism used by PIDs, QEAAs, and Pub-EAAs.",
+    "proximityUseCaseAnalysis": "This attestation type is only expected to be presented online, via OpenID4VP, to Relying Parties that need to verify municipal residency remotely (e.g. an online administrative procedure, a benefits application, an enrollment form). No production use case identified today requires presenting this attestation to a Relying Party in physical proximity without internet connectivity (e.g. an in-person counter, a police check). Per ARB_02, if such a proximity use case is identified in the future, this Rulebook would need to add mso_mdoc as a supported format, since OpenID4VP — the only presentation protocol available for dc+sd-jwt — requires connectivity.",
+    "dataSeparationStatement": "Per eIDAS 2.0 Art. 45h (applicable to non-qualified EAA providers, not only qualified ones): personal data processed to issue this attestation is not combined with personal data from any other service offered by the issuer (Ajuntament de Barcelona, as the Padró authority) or by Fikua (as the technical issuance/registry provider) or their commercial partners. The attestation issuance pipeline reads only the Padró record needed for the requested attestation and does not persist or cross-reference it against other municipal or third-party datasets."
   },
   "scheme": {
     "id": "urn:fikua:padro:barcelona:1",
     "catalogueId": "f91b64f9-67ce-4c25-85e2-c8acb71c4f0a",
     "version": "0.1",
+    "rulebookUri": "https://attestation-registry.fikua.com/rulebooks/urn:fikua:padro:barcelona:1",
     "trustedAuthorities": [],
     "attestationLoS": "iso_18045_moderate",
     "bindingType": "key",
@@ -29,13 +33,14 @@
         "typeIdentifier": "urn:fikua:padro:barcelona:1",
         "claims": [
           {
-            "dataIdentifier": "category",
+            "dataIdentifier": "attestation_legal_category",
             "path": [
-              "category"
+              "attestation_legal_category"
             ],
             "dataType": "string",
             "presence": "mandatory",
-            "disclosability": "MUST NOT"
+            "disclosability": "MUST NOT",
+            "enum": ["urn:etsi:esi:eaa:eu:qualified", "urn:etsi:esi:eaa:eu:pub", "eaa:eu:non-qualified"]
           },
           {
             "dataIdentifier": "given_name",

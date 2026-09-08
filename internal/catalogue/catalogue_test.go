@@ -106,6 +106,31 @@ func TestPadroSchemeIsNonQualifiedEaaBoundToPid(t *testing.T) {
 	if binding.Presence != model.PresenceMandatory {
 		t.Errorf("cryptographically_bound_to presence = %s, want mandatory", binding.Presence)
 	}
+
+	// The attestation_legal_category claim (ARB_25's exact required name —
+	// a bare "category" claim does not satisfy it) must restrict its value
+	// to the three ETSI TS 119 472-1 category strings — not a free-form
+	// string — matching the same value already declared at
+	// Rulebook.Category (ARB_11/ARB_12).
+	category := schema.Claim("attestation_legal_category")
+	if category == nil {
+		t.Fatal("attestation_legal_category claim not found")
+	}
+	wantEnum := []string{"urn:etsi:esi:eaa:eu:qualified", "urn:etsi:esi:eaa:eu:pub", "eaa:eu:non-qualified"}
+	if len(category.Enum) != len(wantEnum) {
+		t.Fatalf("attestation_legal_category enum = %v, want %v", category.Enum, wantEnum)
+	}
+	for i, v := range wantEnum {
+		if category.Enum[i] != v {
+			t.Errorf("attestation_legal_category enum[%d] = %q, want %q", i, category.Enum[i], v)
+		}
+	}
+
+	// VCR_01b: "not_applicable_short_lived" is only a valid basis for
+	// skipping revocation when the token's technical validity is ≤24h.
+	if padro.Rulebook.MaxValiditySeconds <= 0 || padro.Rulebook.MaxValiditySeconds > 24*60*60 {
+		t.Errorf("maxValiditySeconds = %d, want a positive value ≤86400 (VCR_01b)", padro.Rulebook.MaxValiditySeconds)
+	}
 }
 
 func TestUnknownSchemeIDReturnsError(t *testing.T) {
