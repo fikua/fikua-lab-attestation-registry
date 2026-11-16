@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"io/fs"
 	"log"
 	"net/http"
@@ -13,11 +14,18 @@ import (
 	"github.com/fikua/fikua-lab-attestation-registry/data/attestations"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/catalogue"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/httpapi"
+	"github.com/fikua/fikua-lab-attestation-registry/internal/telemetry"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/webui"
 	"github.com/fikua/fikua-lab-attestation-registry/web"
 )
 
 func main() {
+	shutdownTelemetry, telErr := telemetry.Setup(context.Background(), "fikua-lab-attestation-registry")
+	if telErr != nil {
+		log.Fatalf("telemetry: %v", telErr)
+	}
+	defer func() { _ = shutdownTelemetry(context.Background()) }()
+
 	addr := os.Getenv("ADDR")
 	if addr == "" {
 		addr = ":8080"
@@ -51,7 +59,7 @@ func main() {
 	ui.Routes(mux)
 
 	log.Printf("fikua-lab-attestation-registry listening on %s (%d attestation definitions loaded)", addr, len(cat.All()))
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, telemetry.HTTPHandler(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
