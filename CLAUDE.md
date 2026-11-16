@@ -101,17 +101,16 @@ themselves. Do not duplicate credential/claims definitions back into
 
 ## Deployment
 
-CI/CD (`.github/workflows/`) mirrors `fikua/niu`'s pipeline exactly:
-`build.yml` (vet/test on push/PR) → `release.yml` (multi-arch Docker Hub
-push on push to `main` / release) → `deploy.yml` (SSH via Cloudflare Access
-tunnel *for VPS access only*, `docker compose pull && up -d` on the VPS,
-health poll, Traefik smoke test).
+CI (`.github/workflows/ci.yml`, shared workflows from `fikua/fikua-ci-workflows`):
+vet/build/test on every push and PR; on every push to `main` the image
+`ghcr.io/fikua/fikua-lab-attestation-registry` is published as `latest` and `sha-<short>`, and
+`gh release create vX.Y.Z` publishes it as `X.Y.Z`.
 
-The deployment definition (`compose.yaml`) is sourced from
-`fikua-platform-iac/projects/fikua-lab-attestation-registry/` and synced
-into this repo's own `compose.yaml` so `deploy.yml` can `scp` it —
-**edit the platform-iac copy first, then copy it here**; don't let them
-drift (same convention as niu).
+This repository does not deploy. Production is
+`fikua-platform-iac/projects/fikua-lab-attestation-registry/compose.yaml`, which pins a release
+(`X.Y.Z`); Dependabot there opens a pull request for each new release and
+merging it deploys (fikua-docs ADR 0019). No VPS or Cloudflare Access secret
+is needed here.
 
 This service is reachable directly at `attestation-registry.fikua.com` — a
 plain Cloudflare-proxied A record straight to Traefik, same pattern as
