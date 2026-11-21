@@ -13,23 +13,32 @@ import (
 
 	"github.com/fikua/fikua-lab-attestation-registry/data/attestations"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/catalogue"
+	"github.com/fikua/fikua-lab-attestation-registry/internal/health"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/httpapi"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/telemetry"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/webui"
 	"github.com/fikua/fikua-lab-attestation-registry/web"
 )
 
+// listenAddr is the address the server listens on (ADDR, default :8080).
+func listenAddr() string {
+	if a := os.Getenv("ADDR"); a != "" {
+		return a
+	}
+	return ":8080"
+}
+
 func main() {
+	if health.IsHealthcheck() {
+		os.Exit(health.Probe(listenAddr()))
+	}
 	shutdownTelemetry, telErr := telemetry.Setup(context.Background(), "fikua-lab-attestation-registry")
 	if telErr != nil {
 		log.Fatalf("telemetry: %v", telErr)
 	}
 	defer func() { _ = shutdownTelemetry(context.Background()) }()
 
-	addr := os.Getenv("ADDR")
-	if addr == "" {
-		addr = ":8080"
-	}
+	addr := listenAddr()
 	// Set when this service is reached through a reverse-proxying Worker
 	// under a path prefix (e.g. "/attestation-registry" for
 	// lab.fikua.com/attestation-registry/) so its own HTML/redirects point

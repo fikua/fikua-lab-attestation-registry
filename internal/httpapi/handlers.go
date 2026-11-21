@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/fikua/fikua-lab-attestation-registry/internal/catalogue"
+	"github.com/fikua/fikua-lab-attestation-registry/internal/health"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/model"
 	"github.com/fikua/fikua-lab-attestation-registry/internal/sdjwtvc"
 )
@@ -196,7 +197,7 @@ func (h *Handler) getTypeMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	health.Handler("", nil)(w, r)
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {
